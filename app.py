@@ -1,44 +1,26 @@
 import streamlit as st
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 import torch
 import cv2
-import numpy as np
 
-# Load the YOLOv5 model
-model = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+@st.cache_resource
+def load_model():
+    return torch.hub.load('ultralytics/yolov5', 'yolov5s', trust_repo=True)
 
-st.title("Real-time Object Detection with YOLOv5")
+model = load_model()
 
-# Only webcam mode (no image upload)
-st.subheader("Real-Time Webcam Detection")
+class YOLOv5Transformer(VideoTransformerBase):
+    def transform(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+        results = model(img)
+        results.render()
+        return results.ims[0]
 
-# Button to start webcam
-start = st.button("Start Webcam")
+st.title("🔍 Real-time Object Detection with YOLOv5")
 
-if start:
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-        st.error("Could not open webcam.")
-    else:
-        stframe = st.empty()
-        stop = False
-
-        stop_btn = st.button("Stop Webcam", key="stop")  # Unique key to avoid duplication
-
-        while cap.isOpened() and not stop:
-            ret, frame = cap.read()
-            if not ret:
-                st.error("Failed to capture image from webcam.")
-                break
-
-            # YOLOv5 detection
-            results = model(frame)
-            results.render()
-            frame_rgb = cv2.cvtColor(results.ims[0], cv2.COLOR_BGR2RGB)
-
-            # Show in Streamlit
-            stframe.image(frame_rgb, caption="Detected Objects", use_container_width=True)
-
-            # Check if the stop button was pressed
-            stop = st.session_state.get("stop_webcam", False)
-
-        cap.release()
+webrtc_streamer(
+    key="yolov5-stream",
+    video_transformer_factory=YOLOv5Transformer,
+    media_stream_constraints={"video": True, "audio": False},
+    async_processing=True,
+)
