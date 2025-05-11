@@ -4,3 +4,4 @@ torchvision>=0.15.0
 opencv-python-headless
 numpy
 Pillow
+ultralytics
