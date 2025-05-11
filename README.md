@@ -7,6 +7,7 @@ This project implements real-time object detection using YOLOv5. The model is ca
 ## 📸 Project Overview
 
 The application uses YOLOv5 for detecting various objects in video streams. The model processes the webcam feed, identifies objects, and draws bounding boxes with class labels in real-time.
+VISIT SITE:https://naidu0019-real-time-object-detection-with-yolov5-app-59pddp.streamlit.app/
 
 ## 🛠️ Features
 
